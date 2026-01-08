@@ -47,3 +47,79 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+
+# ---- R / RStudio ----
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+*.Rproj
+
+# Package build/check artifacts
+.Rcheck/
+*.tar.gz
+*.tgz
+*.zip
+*.rds
+*.Rds
+
+# Vignettes / docs build outputs (if you build locally)
+inst/doc
+vignettes/*.html
+vignettes/*.pdf
+vignettes/*.md
+
+# ---- Shiny / golem runtime ----
+# Logs / temporary files (if you create them)
+*.log
+
+# If you generate user upload caches locally (only ignore if truly transient)
+# data/cache/
+# inst/app/cache/
+
+# ---- renv (recommended) ----
+# Keep renv.lock committed, ignore the local library
+renv/library/
+renv/local/
+renv/staging/
+renv/python/
+.Renviron
+.Renviron.site
+
+# If you use renv and want to keep the activation script tracked, DO NOT ignore:
+# renv/activate.R  (leave tracked)
+# renv/settings.json (usually tracked; optional)
+
+# ---- Quarto / R Markdown ----
+.quarto/
+_quarto/
+*.html
+*.pdf
+
+# If you render reports into a folder in the repo, ignore outputs but keep templates
+reports/*.html
+reports/*.pdf
+reports/*.docx
+
+# ---- MacOS ----
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+
+# ---- Windows (harmless to include) ----
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ---- IDE / misc ----
+.idea/
+*.swp
+*.swo
+
+# ---- Docker / deployment (optional) ----
+# If you create env files for deploy secrets
+.env
+.env.*
