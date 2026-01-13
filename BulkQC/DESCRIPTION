@@ -2,16 +2,29 @@ Package: BulkQC
 Title: An Amazing Shiny App
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "firstname",
-           family = "lastname",
+    person(given = "Michael",
+           family = "Akpabey",
            role = c("aut", "cre"),
-           email = "your@email.com")
-Description: What the package does (one paragraph).
-License: What license is it under?
+           email = "micakpabey@gmail.com")
+Description: This package allows you to quickly generate and visualoze a QC report for Bulk RNAseq counts data.
+License: MIT License
 Imports: 
+    attempt,
     config,
+    dplyr,
+    DT,
+    glue,
     golem,
-    shiny
+    htmltools,
+    matrixStats,
+    readr,
+    shiny,
+    tibble
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.1.1
+RoxygenNote: 7.3.3
+Suggests: 
+    spelling,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Language: en-US

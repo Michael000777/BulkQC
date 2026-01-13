@@ -1,4 +1,4 @@
-# Installing necessary packages 
+# Installing necessary packages
 
 install.packages(c(
   "golem", "usethis", "devtools", "testthat", "lintr",
@@ -17,7 +17,7 @@ use_recommended_tests()
 use_recommended_deps()
 use_utils_ui()
 
-# Initializing modules 
+# Initializing modules
 golem::add_module(name = "upload")
 golem::add_module(name = "filters")
 golem::add_module(name = "qc_overview")
@@ -36,6 +36,16 @@ dir.create("inst/app/www", recursive = TRUE, showWarnings = FALSE)
 
 
 golem::run_dev()
+
+
+
+usethis::use_package("readr")
+usethis::use_package("DT")
+usethis::use_package("dplyr")
+usethis::use_package("tibble")
+usethis::use_package("matrixStats")
+
+devtools::document()
 
 renv::init()
 renv::snapshot()
