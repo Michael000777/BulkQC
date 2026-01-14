@@ -13,10 +13,12 @@ Imports:
     config,
     dplyr,
     DT,
+    ggplot2,
     glue,
     golem,
     htmltools,
     matrixStats,
+    plotly,
     readr,
     shiny,
     tibble

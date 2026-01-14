@@ -1,3 +1,5 @@
+#' QC Overview UI
+#' @noRd
 mod_qc_overview_ui <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
@@ -6,6 +8,8 @@ mod_qc_overview_ui <- function(id) {
   )
 }
 
+#' QC Overview server
+#' @noRd
 mod_qc_overview_server <- function(id, qc_data) {
   shiny::moduleServer(id, function(input, output, session) {
 
@@ -15,7 +19,9 @@ mod_qc_overview_server <- function(id, qc_data) {
     })
 
     output$qc_table <- DT::renderDT({
-      DT::datatable(qc_tbl(), options = list(pageLength = 15, scrollX = TRUE))
+      d <- qc_data()
+      shiny::validate(shiny::need(!is.null(d), "Upload counts + metadata to view QC."))
+      DT::datatable(compute_qc_metrics(d$counts), options = list(pageLength = 15, scrollX = TRUE))
     })
   })
 }

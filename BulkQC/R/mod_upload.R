@@ -44,9 +44,9 @@ mod_upload_server <- function(id){
     }
 
   qc_data <- shiny::reactive({
-    shiny::req(input$count_file, input$meta_file)
+    shiny::req(input$counts_file, input$meta_file)
 
-    counts_df <- read_table_any(input$count_file$datapath)
+    counts_df <- read_table_any(input$counts_file$datapath)
     meta_df <- read_table_any(input$meta_file$datapath)
 
     if (isTRUE(input$counts_has_gene_id)) {
@@ -106,7 +106,6 @@ mod_upload_server <- function(id){
     if (is.null(input$counts_file) || is.null(input$meta_file)) {
       cat("Waiting for files...\n")
     } else {
-      # If qc_data() errors, shiny will show it; this is for success state
       d <- qc_data()
       cat("OK\n")
       cat("Counts dim (genes x samples): ", paste(dim(d$counts), collapse = " x "), "\n", sep = "")

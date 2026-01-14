@@ -45,6 +45,9 @@ usethis::use_package("dplyr")
 usethis::use_package("tibble")
 usethis::use_package("matrixStats")
 
+usethis::use_package("ggplot2")
+usethis::use_package("plotly")
+
 devtools::document()
 
 renv::init()

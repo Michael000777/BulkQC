@@ -1,0 +1,9 @@
+sample_id	condition	batch	sex	age	RIN
+S1	Control	1	F	34	8.7
+S2	Control	1	M	29	9.1
+S3	Control	2	F	41	8.4
+S4	Control	2	M	37	8.9
+S5	Treated	1	F	33	8.6
+S6	Treated	1	M	28	9.2
+S7	Treated	2	F	40	8.5
+S8	Treated	2	M	36	7.1
