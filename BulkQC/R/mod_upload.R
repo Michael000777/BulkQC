@@ -10,7 +10,7 @@
 mod_upload_ui <- function(id) {
   ns <- NS(id)
   tagList(
-    h3("upload"),
+    h3("Upload"),
     fileInput(ns("counts_file"), "Counts (CSV/TSV). Genes x Samples",
               accept = c(".csv", ".tsv", ".txt")),
     fileInput(ns("meta_file"), "Metadata (CSV/TSV). Samples x Covariates",
