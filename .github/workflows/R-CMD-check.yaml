@@ -27,6 +27,8 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
+      # Prevent renv from auto-activating in CI (keeps deps driven by DESCRIPTION)
+      RENV_CONFIG_AUTOLOADER_ENABLED: "FALSE"
 
     steps:
       - uses: actions/checkout@v4
@@ -39,8 +41,9 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
-      # ---- FIX: ensure pak is available before setup-r-dependencies tries to use it
+      # Ensure pak is available in the same context as your package subdir
       - name: Install pak
+        working-directory: BulkQC
         shell: Rscript {0}
         run: |
           install.packages("pak", repos = "https://cloud.r-project.org")
