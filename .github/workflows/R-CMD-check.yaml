@@ -27,7 +27,7 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
-      # Prevent renv from auto-activating in CI (keeps deps driven by DESCRIPTION)
+      # Prevents renv from auto-activating in CI (keeps deps driven by DESCRIPTION)
       RENV_CONFIG_AUTOLOADER_ENABLED: "FALSE"
 
     steps:
@@ -41,7 +41,17 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
-      # Ensure pak is available in the same context as your package subdir
+      - name: Install system dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libcurl4-openssl-dev \
+            libssl-dev \
+            libxml2-dev \
+            pkg-config
+
+      # Ensures pak is available in the same context as your package subdir
       - name: Install pak
         working-directory: BulkQC
         shell: Rscript {0}
