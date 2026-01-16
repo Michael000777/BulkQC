@@ -39,6 +39,12 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
+      # ---- FIX: ensure pak is available before setup-r-dependencies tries to use it
+      - name: Install pak
+        shell: Rscript {0}
+        run: |
+          install.packages("pak", repos = "https://cloud.r-project.org")
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           working-directory: BulkQC
