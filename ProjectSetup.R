@@ -52,3 +52,9 @@ devtools::document()
 
 renv::init()
 renv::snapshot()
+
+
+usethis::use_testthat()
+usethis::use_package("testthat", "Suggests")
+
+usethis::use_github_action("check-standard")
