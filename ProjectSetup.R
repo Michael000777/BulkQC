@@ -48,6 +48,10 @@ usethis::use_package("matrixStats")
 usethis::use_package("ggplot2")
 usethis::use_package("plotly")
 
+usethis::use_package("htmlwidgets")
+usethis::use_package("zip")
+
+
 devtools::document()
 
 renv::init()

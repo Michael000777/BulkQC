@@ -43,7 +43,7 @@ mod_pca_server <- function(id, qc_data){
 
     #---PCA Plot ---
 
-    output$pca_plot <- plotly::renderPlotly({
+    pca_plot_obj <- shiny::reactive({
       d <- shiny::req(qc_data())
       counts <- shiny::req(d$counts)
       meta <- shiny::req(d$meta)
@@ -63,12 +63,19 @@ mod_pca_server <- function(id, qc_data){
       pca_p <- ggplot2::ggplot(pca_data, ggplot2::aes(x = PC1, y = PC2, color = .data[[factor_color]], text=sample_id)) +
         ggplot2::geom_point() +
         ggplot2::labs(title = paste("PCA Plot Colored by:", factor_color),
-             x = paste0("PC1 (", variance_explained[1], "% variance)"),
-             y = paste0("PC2 (", variance_explained[2], "% variance)"))
+                      x = paste0("PC1 (", variance_explained[1], "% variance)"),
+                      y = paste0("PC2 (", variance_explained[2], "% variance)")) +
+        ggplot2::theme_minimal()
 
       plotly::ggplotly(pca_p, tooltip = c("text", "x", "y"))
+
     })
 
+    output$pca_plot <- plotly::renderPlotly({
+      pca_plot_obj()
+    })
+
+    return(list(pca_plot = pca_plot_obj))
   })
 }
 

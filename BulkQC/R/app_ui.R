@@ -11,7 +11,8 @@ app_ui <- function(request) {
       title = "BulkQC",
       shiny::tabPanel("Upload", mod_upload_ui("upload")),
       shiny::tabPanel("QC Overview", mod_qc_overview_ui("qc")),
-      shiny::tabPanel("PCA", mod_pca_ui("pca"))
+      shiny::tabPanel("PCA", mod_pca_ui("pca")),
+      shiny::tabPanel("Export", mod_export_ui("export"))
     )
   )
 }

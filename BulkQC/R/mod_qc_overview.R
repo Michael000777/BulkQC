@@ -93,7 +93,8 @@ mod_qc_overview_server <- function(id, qc_data) {
     })
 
     #--- QC Histogram Logic---
-    output$qc_metric_hist <- plotly::renderPlotly({
+
+    metric_hist_obj <- shiny::reactive({
       qc <- shiny::req(qc_tbl())
 
       metric <- shiny::req(input$metric)
@@ -114,6 +115,13 @@ mod_qc_overview_server <- function(id, qc_data) {
         ) + ggplot2::theme_minimal()
 
       plotly::ggplotly(p_hist, tooltip = c("x", "y", "text"))
+
+    })
+
+
+
+    output$qc_metric_hist <- plotly::renderPlotly({
+      metric_hist_obj()
     })
 
 
@@ -134,7 +142,7 @@ mod_qc_overview_server <- function(id, qc_data) {
     })
 
     #--- Counts Distribution
-    output$count_hist <- plotly::renderPlotly({
+    count_dist_obj <- shiny::reactive({
       d <- shiny::req(qc_data())
       scope <- shiny::req(input$counts_scope)
       bins <- shiny::req(input$bins_counts)
@@ -183,11 +191,17 @@ mod_qc_overview_server <- function(id, qc_data) {
         ggplot2::theme_minimal()
 
       plotly::ggplotly(p, tooltip = c("x", "y"))
-
-
     })
 
+    output$count_hist <- plotly::renderPlotly({
+      count_dist_obj()
+    })
 
+    return(list(qc_tbl = qc_tbl,
+                metric_hist = metric_hist_obj,
+                count_dist = count_dist_obj
+                )
+           )
   })
 
 

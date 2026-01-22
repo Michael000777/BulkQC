@@ -6,7 +6,7 @@ Authors@R:
            family = "Akpabey",
            role = c("aut", "cre"),
            email = "micakpabey@gmail.com")
-Description: This package allows you to quickly generate and visualoze a QC report for Bulk RNAseq counts data.
+Description: This package allows you to quickly generate and visualize a QC report for Bulk RNAseq counts data.
 License: MIT License
 Imports: 
     attempt,
@@ -17,11 +17,13 @@ Imports:
     glue,
     golem,
     htmltools,
+    htmlwidgets,
     matrixStats,
     plotly,
     readr,
     shiny,
-    tibble
+    tibble,
+    zip
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.3
