@@ -1,4 +1,6 @@
 #' QC Overview UI
+#'
+#' @importFrom rlang .data
 #' @noRd
 mod_qc_overview_ui <- function(id) {
   ns <- shiny::NS(id)

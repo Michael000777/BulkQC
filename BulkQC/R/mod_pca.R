@@ -1,7 +1,7 @@
 #' pca UI Function for BulkQC
 #'
 #' @noRd
-#'
+#' @importFrom rlang .data
 #' @importFrom shiny NS tagList
 mod_pca_ui <- function(id) {
   ns <- NS(id)

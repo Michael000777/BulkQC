@@ -7,7 +7,7 @@ Authors@R:
            role = c("aut", "cre"),
            email = "micakpabey@gmail.com")
 Description: This package allows you to quickly generate and visualize a QC report for Bulk RNAseq counts data.
-License: MIT License
+License: MIT + file LICENSE
 Imports: 
     attempt,
     config,

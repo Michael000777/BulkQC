@@ -67,7 +67,7 @@ mod_export_server <- function(id, pca_plot, qc_bundle){
         # QC histogram (plotly) -> HTML
         if ("hist_html" %in% input$include) {
           p <- tryCatch(qc_bundle$metric_hist(), error = function(e) NULL)
-          shiny::validate(shiny::need(!is.null(p), "Histogram not available yet—choose a metric and bins first."))
+          shiny::validate(shiny::need(!is.null(p), "Histogram not available yet: choose a metric and bins first."))
           p <- shiny::req(qc_bundle$metric_hist())
           out_html <- file.path(tmp_dir, "qc_histogram.html")
           htmlwidgets::saveWidget(p, out_html, selfcontained = TRUE)
