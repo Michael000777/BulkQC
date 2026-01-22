@@ -50,6 +50,8 @@ usethis::use_package("plotly")
 
 usethis::use_package("htmlwidgets")
 usethis::use_package("zip")
+usethis::use_package("rlang", type = "Imports")
+
 
 
 devtools::document()
