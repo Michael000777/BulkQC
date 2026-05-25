@@ -75,7 +75,13 @@ mod_pca_server <- function(id, qc_data){
       pca_plot_obj()
     })
 
-    return(list(pca_plot = pca_plot_obj))
+    pca_settings <- shiny::reactive({
+      list("Coloring factor" = shiny::req(input$pca_factor))
+    })
+
+    return(list(
+      pca_plot = pca_plot_obj,
+      pca_settings = pca_settings
+    ))
   })
 }
-

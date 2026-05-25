@@ -126,6 +126,13 @@ mod_qc_overview_server <- function(id, qc_data) {
       metric_hist_obj()
     })
 
+    metric_hist_settings <- shiny::reactive({
+      list(
+        "Metric" = shiny::req(input$metric),
+        "Bins" = shiny::req(input$bins_metric)
+      )
+    })
+
 
     # --- UI picker --
     output$sample_picker_ui <- shiny::renderUI({
@@ -199,9 +206,23 @@ mod_qc_overview_server <- function(id, qc_data) {
       count_dist_obj()
     })
 
+    count_dist_settings <- shiny::reactive({
+      scope <- shiny::req(input$counts_scope)
+
+      list(
+        "Histogram scope" = if (scope == "one") "One sample" else "All counts",
+        "Sample" = if (scope == "one") shiny::req(input$sample_id) else "All samples",
+        "Bins" = shiny::req(input$bins_counts),
+        "Transform" = if (isTRUE(input$log1p)) "log1p(counts)" else "counts",
+        "Max points" = format(as.integer(shiny::req(input$max_points)), big.mark = ",")
+      )
+    })
+
     return(list(qc_tbl = qc_tbl,
                 metric_hist = metric_hist_obj,
-                count_dist = count_dist_obj
+                count_dist = count_dist_obj,
+                metric_hist_settings = metric_hist_settings,
+                count_dist_settings = count_dist_settings
                 )
            )
   })
