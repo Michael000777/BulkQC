@@ -19,7 +19,8 @@ mod_export_ui <- function(id) {
       choices = c(
         "QC table (CSV)" = "qc_csv",
         "PCA plot (HTML)" = "pca_html",
-        "QC histogram (HTML)" = "hist_html"
+        "QC histogram (HTML)" = "hist_html",
+        "Raw count distribution (HTML)" = "count_dist_html"
       ),
       selected = c("qc_csv", "pca_html")
     ),
@@ -74,6 +75,16 @@ mod_export_server <- function(id, pca_plot, qc_bundle){
           files <- c(files, out_html)
         }
 
+        # Raw count distribution (plotly) -> HTML
+        if ("count_dist_html" %in% input$include) {
+          p <- tryCatch(qc_bundle$count_dist(), error = function(e) NULL)
+          shiny::validate(shiny::need(!is.null(p), "Count distribution not available yet: choose a scope and bins first."))
+          p <- shiny::req(qc_bundle$count_dist())
+          out_html <- file.path(tmp_dir, "count_distribution.html")
+          htmlwidgets::saveWidget(p, out_html, selfcontained = TRUE)
+          files <- c(files, out_html)
+        }
+
         shiny::validate(shiny::need(length(files) > 0, "Nothing selected to export."))
 
 
@@ -84,4 +95,3 @@ mod_export_server <- function(id, pca_plot, qc_bundle){
 
   })
 }
-
