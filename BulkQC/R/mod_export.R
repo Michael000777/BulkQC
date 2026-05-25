@@ -27,7 +27,7 @@ mod_export_ui <- function(id) {
 #' export Server Functions
 #'
 #' @noRd
-mod_export_server <- function(id, pca_plot, qc_bundle){
+mod_export_server <- function(id, pca_plot, qc_bundle, pca_settings = NULL){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
@@ -55,6 +55,11 @@ mod_export_server <- function(id, pca_plot, qc_bundle){
         if ("pca_html" %in% input$include) {
           shiny::validate(shiny::need(!is.null(pca_plot), bulkqc_export_unavailable_message("pca_html")))
           p <- shiny::req(pca_plot())
+          p <- bulkqc_add_export_metadata(
+            p,
+            title = "PCA plot",
+            settings = bulkqc_eval_export_settings(pca_settings)
+          )
           out_html <- file.path(tmp_dir, bulkqc_export_filenames("pca_html"))
           htmlwidgets::saveWidget(p, out_html, selfcontained = TRUE)
           files <- c(files, out_html)
@@ -65,6 +70,11 @@ mod_export_server <- function(id, pca_plot, qc_bundle){
           p <- tryCatch(qc_bundle$metric_hist(), error = function(e) NULL)
           shiny::validate(shiny::need(!is.null(p), bulkqc_export_unavailable_message("hist_html")))
           p <- shiny::req(qc_bundle$metric_hist())
+          p <- bulkqc_add_export_metadata(
+            p,
+            title = "QC metric histogram",
+            settings = bulkqc_eval_export_settings(qc_bundle$metric_hist_settings)
+          )
           out_html <- file.path(tmp_dir, bulkqc_export_filenames("hist_html"))
           htmlwidgets::saveWidget(p, out_html, selfcontained = TRUE)
           files <- c(files, out_html)
@@ -75,6 +85,11 @@ mod_export_server <- function(id, pca_plot, qc_bundle){
           p <- tryCatch(qc_bundle$count_dist(), error = function(e) NULL)
           shiny::validate(shiny::need(!is.null(p), bulkqc_export_unavailable_message("count_dist_html")))
           p <- shiny::req(qc_bundle$count_dist())
+          p <- bulkqc_add_export_metadata(
+            p,
+            title = "Raw count distribution",
+            settings = bulkqc_eval_export_settings(qc_bundle$count_dist_settings)
+          )
           out_html <- file.path(tmp_dir, bulkqc_export_filenames("count_dist_html"))
           htmlwidgets::saveWidget(p, out_html, selfcontained = TRUE)
           files <- c(files, out_html)
@@ -136,4 +151,59 @@ bulkqc_export_unavailable_message <- function(export_id) {
   }
 
   unname(messages[[export_id]])
+}
+
+bulkqc_eval_export_settings <- function(settings) {
+  if (is.null(settings)) {
+    return(list())
+  }
+
+  settings()
+}
+
+bulkqc_add_export_metadata <- function(widget, title, settings, exported_at = Sys.time()) {
+  htmlwidgets::prependContent(
+    widget,
+    bulkqc_export_metadata_header(title, settings, exported_at)
+  )
+}
+
+bulkqc_export_metadata_header <- function(title, settings, exported_at = Sys.time()) {
+  if (is.null(settings)) {
+    settings <- list()
+  }
+
+  rows <- Map(
+    function(name, value) {
+      htmltools::tags$li(
+        htmltools::tags$strong(paste0(name, ": ")),
+        paste(value, collapse = ", ")
+      )
+    },
+    names(settings),
+    settings
+  )
+
+  htmltools::tags$div(
+    class = "bulkqc-export-metadata",
+    style = paste(
+      "font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;",
+      "font-size: 14px;",
+      "line-height: 1.4;",
+      "margin: 16px 0 20px 0;",
+      "padding: 12px 14px;",
+      "border: 1px solid #d0d7de;",
+      "border-radius: 6px;",
+      "background: #f6f8fa;"
+    ),
+    htmltools::tags$h2(
+      style = "font-size: 18px; margin: 0 0 8px 0;",
+      title
+    ),
+    htmltools::tags$p(
+      style = "margin: 0 0 8px 0;",
+      paste("Exported from BulkQC on", format(exported_at, "%Y-%m-%d %H:%M:%S %Z"))
+    ),
+    do.call(htmltools::tags$ul, c(list(style = "margin: 0; padding-left: 20px;"), unname(rows)))
+  )
 }
