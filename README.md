@@ -1,20 +1,22 @@
 # BulkQC
 
-BulkQC is an RShiny application (built with `{golem}`) for quality control and exploratory analysis of large omics datasets. It is designed for production-style use on real project data, where teams need a consistent way to review sample-level metrics, spot issues early, and export reproducible summaries for downstream work and reporting.
+BulkQC is a Shiny app for quick QC of bulk RNA-seq count matrices. The app loads a counts table and sample metadata, shows a few sample-level checks, and exports the tables and plots that are useful for review.
 
 ## What it does
 
-- **QC overview**: summarize key sample metrics and identify outliers  
-- **Exploration**: interactive plots and tables for drilling into distributions and sample comparisons  
-- **Reproducible exports**: download tables/figures and a project snapshot for sharing with collaborators  
-- **Modular structure**: organized as a `{golem}` app so features can be extended without turning into a single-file Shiny script  
+- Upload counts and sample metadata
+- Preview the parsed input files
+- Review per-sample QC metrics
+- Plot QC metric distributions and raw count distributions
+- Run PCA and color samples by metadata columns
+- Download selected QC outputs as a ZIP
 
 ## Typical workflow
 
 1. Upload a count matrix (and optional metadata)
 2. Review QC summaries and distributions
-3. Investigate flagged samples and explore project-level patterns
-4. Export results for collaboration or inclusion in project updates
+3. Check the PCA plot for sample-level patterns
+4. Export selected tables and plots
 
 ## Inputs
 
@@ -33,25 +35,37 @@ BulkQC expects two flat files: a count matrix and a sample metadata table.
 - If metadata is missing any sample present in the counts file, BulkQC will report which sample IDs are missing
 
 ## Input checks (what BulkQC validates)
+
 - Counts can be converted to numeric with no `NA` introduced
 - Counts contain no negative values
 - Metadata contains the specified sample ID column
 - Metadata contains a row for every sample in the counts matrix
 
+## Export
+
+The Export tab downloads a ZIP containing the selected outputs:
+
+- `qc_table.csv`
+- `pca_plot.html`
+- `qc_histogram.html`
+- `count_distribution.html`
+
 ## Tech stack
 
-- **R / Shiny**
-- **{golem}** application structure
-- **{ggplot2}** + **{plotly}** for interactive visualizations
-- Additional packages are listed in `DESCRIPTION`
+- R / Shiny
+- `{golem}`
+- `{ggplot2}` and `{plotly}`
+- `{DT}` for table previews
 
 ## Running locally
 
-### Run from R
-
 ```r
-# install dependencies
-remotes::install_deps(dependencies = TRUE)
+setwd("BulkQC")
 
-# run the app
-golem::run_dev()
+if (!requireNamespace("renv", quietly = TRUE)) {
+  install.packages("renv")
+}
+
+renv::restore()
+source("dev/run_dev.R")
+```
