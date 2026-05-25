@@ -6,6 +6,8 @@ Authors@R:
            family = "Akpabey",
            role = c("aut", "cre"),
            email = "micakpabey@gmail.com")
+Author: Michael Akpabey [aut, cre]
+Maintainer: Michael Akpabey <micakpabey@gmail.com>
 Description: This package allows you to quickly generate and visualize a QC report for Bulk RNAseq counts data.
 License: MIT + file LICENSE
 Imports: 
