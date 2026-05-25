@@ -178,7 +178,7 @@
   <main>
     <h1>BulkQC Issue Work Summary</h1>
     <p class="lede">
-      This report summarizes the export-related work completed or prepared for BulkQC.
+      This report summarizes the export-related work completed for BulkQC.
       It is written as a learning note: what changed, why the change matters, how to review it,
       and what engineering habit each task reinforces.
     </p>
@@ -189,7 +189,7 @@
         <a href="https://github.com/Michael000777/BulkQC">Michael000777/BulkQC</a>
       </div>
       <div>
-        <strong>Report branch</strong>
+        <strong>Report source branch</strong>
         <code>docs-work-summary-report</code>
       </div>
       <div>
@@ -201,9 +201,9 @@
     <h2>At A Glance</h2>
     <ul>
       <li><strong>Issue #3</strong> was implemented, tested, merged into <code>main</code>, and pushed.</li>
-      <li><strong>Issue #4</strong> was implemented on a separate branch and pushed for later merge.</li>
-      <li><strong>Issue #2</strong> was implemented on a separate branch and pushed for later merge.</li>
-      <li>This report is its own docs branch so it can be reviewed independently.</li>
+      <li><strong>Issue #4</strong> was implemented, tested, and merged into <code>main</code>.</li>
+      <li><strong>Issue #2</strong> was implemented, tested, and merged into <code>main</code>.</li>
+      <li>This report was merged into <code>main</code> after the export branches passed QC.</li>
     </ul>
 
     <section class="issue" id="issue-3">
@@ -256,7 +256,7 @@
     <section class="issue" id="issue-4">
       <header>
         <h3>Issue #4: Add tests for export bundle contents</h3>
-        <span class="status branch">Branch pushed</span>
+        <span class="status done">Merged to main</span>
       </header>
       <p class="small">
         Branch: <code>issue-4-export-tests</code> |
@@ -287,7 +287,7 @@
       <ol>
         <li>Check that the helper functions are small and return plain values.</li>
         <li>Check that the UI and server use the helpers instead of repeating strings.</li>
-        <li>Run <code>Rscript -e 'testthat::test_local("BulkQC")'</code>.</li>
+        <li>Run <code>Rscript -e 'setwd("BulkQC"); testthat::test_local()'</code>.</li>
         <li>Confirm the tests fail if an export filename or option ID is changed accidentally.</li>
       </ol>
 
@@ -301,7 +301,7 @@
     <section class="issue" id="issue-2">
       <header>
         <h3>Issue #2: Include selected QC settings in exported HTML artifacts</h3>
-        <span class="status branch">Branch pushed</span>
+        <span class="status done">Merged to main</span>
       </header>
       <p class="small">
         Branch: <code>issue-2-export-metadata</code> |
@@ -331,7 +331,7 @@
 
       <h3>How to review manually</h3>
       <ol>
-        <li>Run the app from the <code>issue-2-export-metadata</code> branch.</li>
+        <li>Run the app from <code>main</code>.</li>
         <li>Upload sample data and change the PCA coloring factor or histogram settings.</li>
         <li>Export the PCA or histogram HTML files.</li>
         <li>Open the exported HTML and confirm a BulkQC metadata block appears above the plot.</li>
@@ -345,38 +345,35 @@
       </div>
     </section>
 
-    <h2>Current Branches</h2>
+    <h2>Current Status</h2>
     <ul>
-      <li><code>main</code>: contains the merged raw count distribution export and README cleanup.</li>
-      <li><code>issue-4-export-tests</code>: ready for review and later merge.</li>
-      <li><code>issue-2-export-metadata</code>: ready for review and later merge.</li>
-      <li><code>docs-work-summary-report</code>: contains this report.</li>
+      <li><code>main</code>: contains the raw count distribution export, export contract tests, HTML export metadata, README cleanup, and this report.</li>
+      <li><code>issue-4-export-tests</code>: merged after passing tests.</li>
+      <li><code>issue-2-export-metadata</code>: merged after passing tests and conflict resolution.</li>
+      <li><code>docs-work-summary-report</code>: merged after the report was updated for the final mainline state.</li>
     </ul>
 
     <h2>Useful Commands</h2>
     <pre><code># Run tests
-Rscript -e 'testthat::test_local("BulkQC")'
+Rscript -e 'setwd("BulkQC"); testthat::test_local()'
 
-# Try a branch locally
-git switch issue-2-export-metadata
-
-# Return to main
+# Work from main
 git switch main
 
 # View recent work
 git log --oneline --decorate --all -8</code></pre>
 
-    <h2>Recommended Merge Order</h2>
+    <h2>Merge Notes</h2>
     <ol>
-      <li>Review and merge <code>issue-4-export-tests</code> first.</li>
-      <li>Review and merge <code>issue-2-export-metadata</code> next.</li>
-      <li>Resolve any test-file overlap if both branches changed <code>test-export.R</code>.</li>
-      <li>Review and merge this docs report branch if you want it kept in the repository.</li>
+      <li><code>issue-4-export-tests</code> was merged first to establish the export helper contract.</li>
+      <li><code>issue-2-export-metadata</code> was merged next and integrated with those helpers.</li>
+      <li>The overlap in <code>mod_export.R</code> and <code>test-export.R</code> was resolved by keeping both the helper extraction and metadata coverage.</li>
+      <li>The docs report was merged last and updated to reflect the final state on <code>main</code>.</li>
     </ol>
 
     <p class="small">
-      Note: issue #2 and issue #4 both touch <code>BulkQC/tests/testthat/test-export.R</code>.
-      That is manageable, but it means the second merge may need a small conflict resolution.
+      Note: issue #2 and issue #4 both touched <code>BulkQC/tests/testthat/test-export.R</code>.
+      The combined test suite passed after conflict resolution.
     </p>
   </main>
 </body>
