@@ -20,6 +20,15 @@ testthat::test_that("upload preview tables suppress row names", {
   testthat::expect_no_match(rendered, "<th><\\/th>")
 })
 
+testthat::test_that("table reader preserves duplicate headers for validation", {
+  csv <- tempfile(fileext = ".csv")
+  writeLines(c("gene_id,s1,s1", "g1,1,2", "g2,3,4"), csv)
+
+  df <- bulkqc_read_table_any(csv)
+
+  testthat::expect_equal(names(df), c("gene_id", "s1", "s1"))
+})
+
 testthat::test_that("packaged example paths exist", {
   paths <- bulkqc_example_paths("csv")
 
