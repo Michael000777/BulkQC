@@ -10,7 +10,8 @@ mod_pca_ui <- function(id) {
     shiny::fluidRow(
       shiny::column(
         4,
-        shiny::uiOutput(ns("pca_factor_picker"))
+        shiny::uiOutput(ns("pca_factor_picker")),
+        shiny::uiOutput(ns("pca_axis_picker"))
       ),
 
       shiny::column(8, plotly::plotlyOutput(ns("pca_plot"), height = "540px"))
@@ -43,28 +44,63 @@ mod_pca_server <- function(id, qc_data){
 
     #---PCA Plot ---
 
-    pca_plot_obj <- shiny::reactive({
+    pca_result_obj <- shiny::reactive({
       d <- shiny::req(qc_data())
       counts <- shiny::req(d$counts)
+
+      tryCatch(
+        bulkqc_compute_pca(counts),
+        error = function(e) {
+          shiny::validate(shiny::need(FALSE, conditionMessage(e)))
+        }
+      )
+    })
+
+    output$pca_axis_picker <- shiny::renderUI({
+      pca_result <- shiny::req(pca_result_obj())
+      pcs <- bulkqc_available_pcs(pca_result)
+      if (length(pcs) < 2) return(NULL)
+
+      shiny::tagList(
+        shiny::selectInput(
+          ns("x_pc"),
+          "X axis",
+          choices = pcs,
+          selected = pcs[[1]]
+        ),
+        shiny::selectInput(
+          ns("y_pc"),
+          "Y axis",
+          choices = pcs,
+          selected = pcs[[2]]
+        )
+      )
+    })
+
+    pca_plot_obj <- shiny::reactive({
+      d <- shiny::req(qc_data())
       meta <- shiny::req(d$meta)
       factor_color <- shiny::req(input$pca_factor)
+      pca_result <- shiny::req(pca_result_obj())
+      pcs <- bulkqc_available_pcs(pca_result)
+      x_pc <- if (is.null(input$x_pc)) pcs[[1]] else input$x_pc
+      y_pc <- if (is.null(input$y_pc)) pcs[[2]] else input$y_pc
 
-      log_counts <- log2(counts + 1)
-      variance <- apply(log_counts, 1, var)
-      log_counts <- log_counts[variance > 1e-8, ]
+      tryCatch(
+        bulkqc_validate_pca_axes(pca_result, x_pc, y_pc),
+        error = function(e) {
+          shiny::validate(shiny::need(FALSE, conditionMessage(e)))
+        }
+      )
 
-      pca_result <- stats::prcomp(t(log_counts), scale. = TRUE)
-      variance_explained <- round(100 * (pca_result$sdev^2 / sum(pca_result$sdev^2)), 2)
+      pca_data <- cbind(pca_result$scores, meta)
+      variance_explained <- pca_result$variance_explained
 
-      pca_data <- data.frame(PC1 = pca_result$x[, 1], PC2 = pca_result$x[, 2],
-                             PC3 = pca_result$x[, 3], PC4 = pca_result$x[, 4],
-                             meta)
-
-      pca_p <- ggplot2::ggplot(pca_data, ggplot2::aes(x = PC1, y = PC2, color = .data[[factor_color]], text=sample_id)) +
+      pca_p <- ggplot2::ggplot(pca_data, ggplot2::aes(x = .data[[x_pc]], y = .data[[y_pc]], color = .data[[factor_color]], text = .data$sample_id)) +
         ggplot2::geom_point() +
         ggplot2::labs(title = paste("PCA Plot Colored by:", factor_color),
-                      x = paste0("PC1 (", variance_explained[1], "% variance)"),
-                      y = paste0("PC2 (", variance_explained[2], "% variance)")) +
+                      x = paste0(x_pc, " (", variance_explained[[x_pc]], "% variance)"),
+                      y = paste0(y_pc, " (", variance_explained[[y_pc]], "% variance)")) +
         ggplot2::theme_minimal()
 
       plotly::ggplotly(pca_p, tooltip = c("text", "x", "y"))
@@ -76,7 +112,14 @@ mod_pca_server <- function(id, qc_data){
     })
 
     pca_settings <- shiny::reactive({
-      list("Coloring factor" = shiny::req(input$pca_factor))
+      pca_result <- shiny::req(pca_result_obj())
+      pcs <- bulkqc_available_pcs(pca_result)
+
+      list(
+        "Coloring factor" = shiny::req(input$pca_factor),
+        "X axis" = if (is.null(input$x_pc)) pcs[[1]] else input$x_pc,
+        "Y axis" = if (is.null(input$y_pc)) pcs[[2]] else input$y_pc
+      )
     })
 
     return(list(
