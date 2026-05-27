@@ -78,3 +78,28 @@ testthat::test_that("example data resolves its packaged sample id column", {
     "Sample_id"
   )
 })
+
+testthat::test_that("uploaded metadata infers the sample id column after example data", {
+  counts_df <- data.frame(
+    gene_id = c("g1", "g2"),
+    s1 = c(1, 2),
+    s2 = c(3, 4),
+    check.names = FALSE
+  )
+  meta_df <- data.frame(
+    Sample_id = c("s1", "s2"),
+    condition = c("A", "B")
+  )
+
+  resolved <- bulkqc_resolve_sample_id_col("sample_id", list(meta_df = meta_df))
+  prepared <- bulkqc_prepare_qc_data(
+    counts_df = counts_df,
+    meta_df = meta_df,
+    counts_has_gene_id = TRUE,
+    meta_sample_id_col = resolved
+  )
+
+  testthat::expect_equal(resolved, "Sample_id")
+  testthat::expect_equal(prepared$sample_id_col, "Sample_id")
+  testthat::expect_equal(prepared$meta$Sample_id, c("s1", "s2"))
+})

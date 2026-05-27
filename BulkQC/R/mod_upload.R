@@ -138,8 +138,26 @@ bulkqc_load_example_data <- function(ext = "csv") {
 }
 
 bulkqc_resolve_sample_id_col <- function(input_col, tables) {
-  if (!is.null(tables$sample_id_col) && identical(input_col, "Sample_id")) {
-    return(tables$sample_id_col)
+  if (is.null(input_col) || identical(input_col, "") || isTRUE(is.na(input_col))) {
+    return(input_col)
+  }
+
+  meta_names <- names(tables$meta_df)
+  if (is.null(meta_names) || length(meta_names) == 0) {
+    return(input_col)
+  }
+
+  if (input_col %in% meta_names) {
+    return(input_col)
+  }
+
+  normalize_name <- function(x) {
+    tolower(gsub("[^[:alnum:]]+", "", x))
+  }
+
+  matches <- meta_names[normalize_name(meta_names) == normalize_name(input_col)]
+  if (length(matches) == 1) {
+    return(matches)
   }
 
   input_col
