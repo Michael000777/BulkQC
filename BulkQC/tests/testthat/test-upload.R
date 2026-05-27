@@ -29,6 +29,12 @@ testthat::test_that("table reader preserves duplicate headers for validation", {
   testthat::expect_equal(names(df), c("gene_id", "s1", "s1"))
 })
 
+testthat::test_that("file selection helper ignores empty upload inputs", {
+  testthat::expect_false(bulkqc_file_is_selected(NULL))
+  testthat::expect_false(bulkqc_file_is_selected(list(datapath = "")))
+  testthat::expect_true(bulkqc_file_is_selected(list(datapath = tempfile())))
+})
+
 testthat::test_that("packaged example paths exist", {
   paths <- bulkqc_example_paths("csv")
 

@@ -39,7 +39,8 @@ mod_upload_server <- function(id){
   })
 
   raw_tables <- shiny::reactive({
-    has_uploads <- !is.null(input$counts_file) && !is.null(input$meta_file)
+    has_uploads <- bulkqc_file_is_selected(input$counts_file) &&
+      bulkqc_file_is_selected(input$meta_file)
 
     if (has_uploads) {
       return(list(
@@ -116,6 +117,10 @@ bulkqc_read_table_any <- function(path){
   } else {
     readr::read_tsv(path, show_col_types = FALSE, name_repair = "minimal")
   }
+}
+
+bulkqc_file_is_selected <- function(file_input) {
+  !is.null(file_input) && isTRUE(nzchar(file_input$datapath))
 }
 
 bulkqc_example_paths <- function(ext = "csv") {
