@@ -11,6 +11,7 @@ mod_upload_ui <- function(id) {
   ns <- NS(id)
   tagList(
     h3("Upload"),
+    shiny::actionButton(ns("load_example"), "Load example data"),
     fileInput(ns("counts_file"), "Counts (CSV/TSV). Genes x Samples",
               accept = c(".csv", ".tsv", ".txt")),
     fileInput(ns("meta_file"), "Metadata (CSV/TSV). Samples x Covariates",
@@ -33,81 +34,60 @@ mod_upload_ui <- function(id) {
 mod_upload_server <- function(id){
   shiny::moduleServer(id, function(input, output, session){
 
-    read_table_any <- function(path){
-      ext <- tolower(tools::file_ext(path))
-      if (ext == "csv"){
-        readr::read_csv(path, show_col_types = FALSE)
-      } else {
-        readr::read_tsv(path, show_col_types = FALSE)
-      }
+  shiny::observeEvent(input$load_example, {
+    shiny::updateTextInput(session, "meta_sample_id_col", value = "sample_id")
+  })
 
+  raw_tables <- shiny::reactive({
+    has_uploads <- !is.null(input$counts_file) && !is.null(input$meta_file)
+
+    if (has_uploads) {
+      return(list(
+        counts_df = bulkqc_read_table_any(input$counts_file$datapath),
+        meta_df = bulkqc_read_table_any(input$meta_file$datapath),
+        source = "Uploaded files"
+      ))
     }
+
+    if (isTRUE(input$load_example > 0)) {
+      return(bulkqc_load_example_data())
+    }
+
+    NULL
+  })
 
   qc_data <- shiny::reactive({
-    shiny::req(input$counts_file, input$meta_file)
+    tables <- shiny::req(raw_tables())
+    sample_id_col <- bulkqc_resolve_sample_id_col(input$meta_sample_id_col, tables)
 
-    counts_df <- read_table_any(input$counts_file$datapath)
-    meta_df <- read_table_any(input$meta_file$datapath)
-
-    if (isTRUE(input$counts_has_gene_id)) {
-      gene_id <- counts_df[[1]]
-      counts_mat <- as.matrix(counts_df[, -1, drop = FALSE])
-      rownames(counts_mat) <- as.character(gene_id)
-    } else {
-      counts_mat <- as.matrix(counts_df)
-    }
-
-    # --- Formatting checks for counts table ---
-    suppressWarnings(storage.mode(counts_mat) <- "numeric")
-    if (anyNA(counts_mat)){
-      stop("Counts contains NA after numeric coercion. Check file formatting.")
-    }
-
-    if (any(counts_mat < 0)){
-      stop("Counts contains negative values (not allowed).")
-    }
-
-    sample_ids <- colnames(counts_mat)
-
-    # --- metadata: format checks ---
-    sid_col <- input$meta_sample_id_col
-    if (!sid_col %in% names(meta_df)) stop(paste0("Metadata missing column: ", sid_col))
-
-    meta_df[[sid_col]] <- as.character(meta_df[[sid_col]])
-
-    # --- Alignment checks: counts df to metadata df ---
-    meta_aligned <- meta_df[match(sample_ids, meta_df[[sid_col]]), , drop = FALSE]
-    if (anyNA(meta_aligned[[sid_col]])) {
-      missing <- sample_ids[is.na(meta_aligned[[sid_col]])]
-      stop(paste0("Metadata missing these samples: ", paste(missing, collapse = ", ")))
-    }
-
-    list(
-      counts = counts_mat,
-      meta = meta_aligned,
-      sample_id_col = sid_col
+    prepared <- bulkqc_prepare_qc_data(
+      counts_df = tables$counts_df,
+      meta_df = tables$meta_df,
+      counts_has_gene_id = isTRUE(input$counts_has_gene_id),
+      meta_sample_id_col = sample_id_col
     )
+    prepared$source <- tables$source
+    prepared
 
   })
 
   output$counts_preview <- DT::renderDataTable({
-    shiny::req(input$counts_file)
-    df <- read_table_any(input$counts_file$datapath)
-    DT::datatable(utils::head(df, 10), options = list(scrollX=TRUE))
+    tables <- shiny::req(raw_tables())
+    DT::datatable(utils::head(tables$counts_df, 10), options = list(scrollX=TRUE))
   })
 
   output$meta_preview <- DT::renderDT({
-    shiny::req(input$meta_file)
-    df <- read_table_any(input$meta_file$datapath)
-    DT::datatable(utils::head(df, 10), options = list(scrollX = TRUE))
+    tables <- shiny::req(raw_tables())
+    DT::datatable(utils::head(tables$meta_df, 10), options = list(scrollX = TRUE))
   })
 
   output$status <- shiny::renderPrint({
-    if (is.null(input$counts_file) || is.null(input$meta_file)) {
-      cat("Waiting for files...\n")
+    if (is.null(raw_tables())) {
+      cat("Waiting for files or example data...\n")
     } else {
       d <- qc_data()
       cat("OK\n")
+      cat("Data source: ", d$source, "\n", sep = "")
       cat("Counts dim (genes x samples): ", paste(dim(d$counts), collapse = " x "), "\n", sep = "")
       cat("Metadata rows: ", nrow(d$meta), "\n", sep = "")
     }
@@ -118,3 +98,82 @@ mod_upload_server <- function(id){
   })
 }
 
+bulkqc_read_table_any <- function(path){
+  ext <- tolower(tools::file_ext(path))
+  if (ext == "csv"){
+    readr::read_csv(path, show_col_types = FALSE)
+  } else {
+    readr::read_tsv(path, show_col_types = FALSE)
+  }
+}
+
+bulkqc_example_paths <- function(ext = "csv") {
+  ext <- match.arg(ext, c("csv", "tsv"))
+  list(
+    counts = app_sys("extdata", paste0("BulkQC_sample_counts.", ext)),
+    meta = app_sys("extdata", paste0("BulkQC_sample_metadata.", ext))
+  )
+}
+
+bulkqc_load_example_data <- function(ext = "csv") {
+  paths <- bulkqc_example_paths(ext)
+
+  list(
+    counts_df = bulkqc_read_table_any(paths$counts),
+    meta_df = bulkqc_read_table_any(paths$meta),
+    sample_id_col = "sample_id",
+    source = "Packaged example data"
+  )
+}
+
+bulkqc_resolve_sample_id_col <- function(input_col, tables) {
+  if (!is.null(tables$sample_id_col) && identical(input_col, "Sample_id")) {
+    return(tables$sample_id_col)
+  }
+
+  input_col
+}
+
+bulkqc_prepare_qc_data <- function(counts_df,
+                                  meta_df,
+                                  counts_has_gene_id = TRUE,
+                                  meta_sample_id_col = "Sample_id") {
+  if (isTRUE(counts_has_gene_id)) {
+    gene_id <- counts_df[[1]]
+    counts_mat <- as.matrix(counts_df[, -1, drop = FALSE])
+    rownames(counts_mat) <- as.character(gene_id)
+  } else {
+    counts_mat <- as.matrix(counts_df)
+  }
+
+  # --- Formatting checks for counts table ---
+  suppressWarnings(storage.mode(counts_mat) <- "numeric")
+  if (anyNA(counts_mat)){
+    stop("Counts contains NA after numeric coercion. Check file formatting.")
+  }
+
+  if (any(counts_mat < 0)){
+    stop("Counts contains negative values (not allowed).")
+  }
+
+  sample_ids <- colnames(counts_mat)
+
+  # --- metadata: format checks ---
+  sid_col <- meta_sample_id_col
+  if (!sid_col %in% names(meta_df)) stop(paste0("Metadata missing column: ", sid_col))
+
+  meta_df[[sid_col]] <- as.character(meta_df[[sid_col]])
+
+  # --- Alignment checks: counts df to metadata df ---
+  meta_aligned <- meta_df[match(sample_ids, meta_df[[sid_col]]), , drop = FALSE]
+  if (anyNA(meta_aligned[[sid_col]])) {
+    missing <- sample_ids[is.na(meta_aligned[[sid_col]])]
+    stop(paste0("Metadata missing these samples: ", paste(missing, collapse = ", ")))
+  }
+
+  list(
+    counts = counts_mat,
+    meta = meta_aligned,
+    sample_id_col = sid_col
+  )
+}
