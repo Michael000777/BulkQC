@@ -107,6 +107,26 @@ testthat::test_that("bulkqc_validate_pca_axes rejects unavailable or duplicate a
   )
 })
 
+testthat::test_that("bulkqc_pca_plot_data removes duplicate metadata sample_id", {
+  counts <- matrix(
+    c(1, 2, 3, 4, 5, 7, 7, 8, 9, 11, 10, 12),
+    nrow = 4,
+    ncol = 3,
+    dimnames = list(paste0("g", 1:4), paste0("s", 1:3))
+  )
+  pca <- bulkqc_compute_pca(counts)
+  meta <- data.frame(
+    sample_id = paste0("s", 1:3),
+    condition = c("A", "A", "B")
+  )
+
+  plot_data <- bulkqc_pca_plot_data(pca, meta)
+
+  testthat::expect_equal(plot_data$sample_id, paste0("s", 1:3))
+  testthat::expect_true("condition" %in% names(plot_data))
+  testthat::expect_equal(anyDuplicated(names(plot_data)), 0L)
+})
+
 testthat::test_that("PCA UI includes dynamic axis controls", {
   ui <- mod_pca_ui("pca")
   rendered <- htmltools::renderTags(ui)$html
@@ -114,4 +134,3 @@ testthat::test_that("PCA UI includes dynamic axis controls", {
   testthat::expect_match(rendered, "pca-pca_factor_picker")
   testthat::expect_match(rendered, "pca-pca_axis_picker")
 })
-

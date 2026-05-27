@@ -6,6 +6,20 @@ testthat::test_that("upload UI includes example data control", {
   testthat::expect_match(rendered, "upload-load_example")
 })
 
+testthat::test_that("upload preview tables suppress row names", {
+  rendered <- htmltools::renderTags(
+    DT::datatable(
+      utils::head(data.frame(gene_id = "g1", s1 = 1), 10),
+      options = list(scrollX = TRUE),
+      rownames = FALSE
+    )
+  )$html
+
+  testthat::expect_match(rendered, "gene_id", fixed = TRUE)
+  testthat::expect_match(rendered, "s1", fixed = TRUE)
+  testthat::expect_no_match(rendered, "<th><\\/th>")
+})
+
 testthat::test_that("packaged example paths exist", {
   paths <- bulkqc_example_paths("csv")
 

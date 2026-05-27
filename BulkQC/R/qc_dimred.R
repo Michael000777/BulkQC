@@ -66,3 +66,14 @@ bulkqc_validate_pca_axes <- function(pca_result, x_pc, y_pc) {
 
   invisible(TRUE)
 }
+
+bulkqc_pca_plot_data <- function(pca_result, meta) {
+  meta_for_plot <- meta[, setdiff(names(meta), "sample_id"), drop = FALSE]
+  pca_data <- cbind(pca_result$scores, meta_for_plot)
+
+  if (anyDuplicated(names(pca_data))) {
+    stop("PCA plot data contains duplicate columns.", call. = FALSE)
+  }
+
+  pca_data
+}

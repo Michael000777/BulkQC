@@ -93,7 +93,7 @@ mod_pca_server <- function(id, qc_data){
         }
       )
 
-      pca_data <- cbind(pca_result$scores, meta)
+      pca_data <- bulkqc_pca_plot_data(pca_result, meta)
       variance_explained <- pca_result$variance_explained
 
       pca_p <- ggplot2::ggplot(pca_data, ggplot2::aes(x = .data[[x_pc]], y = .data[[y_pc]], color = .data[[factor_color]], text = .data$sample_id)) +
