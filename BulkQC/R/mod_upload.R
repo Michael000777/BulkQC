@@ -112,9 +112,9 @@ mod_upload_server <- function(id){
 bulkqc_read_table_any <- function(path){
   ext <- tolower(tools::file_ext(path))
   if (ext == "csv"){
-    readr::read_csv(path, show_col_types = FALSE)
+    readr::read_csv(path, show_col_types = FALSE, name_repair = "minimal")
   } else {
-    readr::read_tsv(path, show_col_types = FALSE)
+    readr::read_tsv(path, show_col_types = FALSE, name_repair = "minimal")
   }
 }
 
