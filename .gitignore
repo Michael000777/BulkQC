@@ -102,6 +102,9 @@ reports/*.html
 reports/*.pdf
 reports/*.docx
 
+# Personal local reports and notes
+local_reports/
+
 # ---- MacOS ----
 .DS_Store
 .AppleDouble
