@@ -16,10 +16,7 @@ mod_qc_overview_ui <- function(id) {
         shiny::selectInput(
           ns("metric"),
           "Metric",
-          choices = c("Library Size" = "lib_size",
-                      "Detected Genes" = "detected_genes",
-                      "% Zero Genes" = "pct_zero"
-                      ),
+          choices = bulkqc_qc_metric_choices(),
           selected = "lib_size"
         )
       ),
@@ -101,6 +98,7 @@ mod_qc_overview_server <- function(id, qc_data) {
 
       metric <- shiny::req(input$metric)
       bins <- shiny::req(input$bins_metric)
+      shiny::validate(shiny::need(metric %in% names(qc), paste("Metric not available:", metric)))
 
 
       plot_df <- data.frame(
