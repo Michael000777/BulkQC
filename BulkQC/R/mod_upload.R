@@ -73,12 +73,12 @@ mod_upload_server <- function(id){
 
   output$counts_preview <- DT::renderDataTable({
     tables <- shiny::req(raw_tables())
-    DT::datatable(utils::head(tables$counts_df, 10), options = list(scrollX=TRUE))
+    DT::datatable(utils::head(tables$counts_df, 10), options = list(scrollX=TRUE), rownames = FALSE)
   })
 
   output$meta_preview <- DT::renderDT({
     tables <- shiny::req(raw_tables())
-    DT::datatable(utils::head(tables$meta_df, 10), options = list(scrollX = TRUE))
+    DT::datatable(utils::head(tables$meta_df, 10), options = list(scrollX = TRUE), rownames = FALSE)
   })
 
   output$status <- shiny::renderPrint({
