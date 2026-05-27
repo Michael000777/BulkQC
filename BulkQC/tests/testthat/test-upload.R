@@ -29,6 +29,12 @@ testthat::test_that("table reader preserves duplicate headers for validation", {
   testthat::expect_equal(names(df), c("gene_id", "s1", "s1"))
 })
 
+testthat::test_that("file selection helper ignores empty upload inputs", {
+  testthat::expect_false(bulkqc_file_is_selected(NULL))
+  testthat::expect_false(bulkqc_file_is_selected(list(datapath = "")))
+  testthat::expect_true(bulkqc_file_is_selected(list(datapath = tempfile())))
+})
+
 testthat::test_that("packaged example paths exist", {
   paths <- bulkqc_example_paths("csv")
 
@@ -77,4 +83,29 @@ testthat::test_that("example data resolves its packaged sample id column", {
     bulkqc_resolve_sample_id_col("Sample_id", list(source = "Uploaded files")),
     "Sample_id"
   )
+})
+
+testthat::test_that("uploaded metadata infers the sample id column after example data", {
+  counts_df <- data.frame(
+    gene_id = c("g1", "g2"),
+    s1 = c(1, 2),
+    s2 = c(3, 4),
+    check.names = FALSE
+  )
+  meta_df <- data.frame(
+    Sample_id = c("s1", "s2"),
+    condition = c("A", "B")
+  )
+
+  resolved <- bulkqc_resolve_sample_id_col("sample_id", list(meta_df = meta_df))
+  prepared <- bulkqc_prepare_qc_data(
+    counts_df = counts_df,
+    meta_df = meta_df,
+    counts_has_gene_id = TRUE,
+    meta_sample_id_col = resolved
+  )
+
+  testthat::expect_equal(resolved, "Sample_id")
+  testthat::expect_equal(prepared$sample_id_col, "Sample_id")
+  testthat::expect_equal(prepared$meta$Sample_id, c("s1", "s2"))
 })
