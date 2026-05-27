@@ -85,11 +85,22 @@ mod_upload_server <- function(id){
     if (is.null(raw_tables())) {
       cat("Waiting for files or example data...\n")
     } else {
-      d <- qc_data()
-      cat("OK\n")
-      cat("Data source: ", d$source, "\n", sep = "")
-      cat("Counts dim (genes x samples): ", paste(dim(d$counts), collapse = " x "), "\n", sep = "")
-      cat("Metadata rows: ", nrow(d$meta), "\n", sep = "")
+      tryCatch(
+        {
+          d <- qc_data()
+          cat("OK\n")
+          cat("Data source: ", d$source, "\n", sep = "")
+          cat("Counts dim (genes x samples): ", paste(dim(d$counts), collapse = " x "), "\n", sep = "")
+          cat("Metadata rows: ", nrow(d$meta), "\n", sep = "")
+          if (length(d$extra_metadata_samples) > 0) {
+            cat("Extra metadata rows ignored: ", bulkqc_collapse_ids(d$extra_metadata_samples), "\n", sep = "")
+          }
+        },
+        error = function(e) {
+          cat("Input validation failed\n")
+          cat(conditionMessage(e), "\n", sep = "")
+        }
+      )
     }
   })
 
@@ -138,42 +149,14 @@ bulkqc_prepare_qc_data <- function(counts_df,
                                   meta_df,
                                   counts_has_gene_id = TRUE,
                                   meta_sample_id_col = "Sample_id") {
-  if (isTRUE(counts_has_gene_id)) {
-    gene_id <- counts_df[[1]]
-    counts_mat <- as.matrix(counts_df[, -1, drop = FALSE])
-    rownames(counts_mat) <- as.character(gene_id)
-  } else {
-    counts_mat <- as.matrix(counts_df)
-  }
-
-  # --- Formatting checks for counts table ---
-  suppressWarnings(storage.mode(counts_mat) <- "numeric")
-  if (anyNA(counts_mat)){
-    stop("Counts contains NA after numeric coercion. Check file formatting.")
-  }
-
-  if (any(counts_mat < 0)){
-    stop("Counts contains negative values (not allowed).")
-  }
-
+  counts_mat <- bulkqc_counts_df_to_matrix(counts_df, counts_has_gene_id)
   sample_ids <- colnames(counts_mat)
-
-  # --- metadata: format checks ---
-  sid_col <- meta_sample_id_col
-  if (!sid_col %in% names(meta_df)) stop(paste0("Metadata missing column: ", sid_col))
-
-  meta_df[[sid_col]] <- as.character(meta_df[[sid_col]])
-
-  # --- Alignment checks: counts df to metadata df ---
-  meta_aligned <- meta_df[match(sample_ids, meta_df[[sid_col]]), , drop = FALSE]
-  if (anyNA(meta_aligned[[sid_col]])) {
-    missing <- sample_ids[is.na(meta_aligned[[sid_col]])]
-    stop(paste0("Metadata missing these samples: ", paste(missing, collapse = ", ")))
-  }
+  meta_aligned <- bulkqc_align_metadata(meta_df, meta_sample_id_col, sample_ids)
 
   list(
     counts = counts_mat,
     meta = meta_aligned,
-    sample_id_col = sid_col
+    sample_id_col = meta_sample_id_col,
+    extra_metadata_samples = attr(meta_aligned, "bulkqc_extra_metadata_samples", exact = TRUE)
   )
 }
